@@ -1,3 +1,4 @@
+
 (function() {
   'use strict';
 
@@ -223,9 +224,12 @@
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
-    // return _.every(collection, function(allFound, item) {
-    //   return !!iterator(item) && allFound;
-    // }, false);
+    if (iterator === undefined) {
+      iterator = function(element) {return element};
+    }
+    return _.reduce(collection, function(allFound, item) {
+      return (!!iterator(item) || allFound) ? true : false;
+    }, false);
 
   };
 
@@ -249,11 +253,25 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    for (var i = 0; i < arguments.length; i ++) {
+      for (var key in arguments[i]) {
+      obj[key] = arguments[i][key]; 
+      };
+    };
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    for (var i = 0; i < arguments.length; i ++) {
+      for (var key in arguments[i]) {
+        if (obj[key] === undefined) {
+          obj[key] = arguments[i][key]; 
+        };
+      };
+    };
+    return obj;
   };
 
 
@@ -296,7 +314,17 @@
   // _.memoize should return a function that, when called, will check if it has
   // already computed the result for the given argument and return that value
   // instead if possible.
-  _.memoize = function(func) {
+  _.memoize = function(func, ...args) {
+    var memo = {};
+    return function() {
+      var slice = [].slice.call(arguments, 0);
+      var args = slice.join.call(arguments, '-');
+
+      if (args in memo) {
+        return memo[args];
+      }
+      return (memo[args] = func.apply(this, arguments));
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -305,7 +333,11 @@
   // The arguments for the original function are passed after the wait
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
-  _.delay = function(func, wait) {
+  _.delay = function(func, wait, ...args) {
+
+    return setTimeout(function(){
+      func.apply(null, args);
+    }, wait);
   };
 
 
@@ -320,6 +352,16 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var shuffling = array.slice(0);
+    var currentIndex, temporaryValue;
+
+    for (var i = 0; i < shuffling.length; i++) {
+      currentIndex = Math.floor(Math.random() * shuffling.length);
+      temporaryValue = shuffling[i];
+      shuffling[i] = shuffling[currentIndex];
+      shuffling[currentIndex] = temporaryValue;
+    }
+    return shuffling;
   };
 
 
