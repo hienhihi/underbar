@@ -175,9 +175,16 @@
       accumulator = collection[0];
       collection = collection.slice(1);
     }
-    for(var i = 0; i < collection.length; i++) {
-      accumulator = iterator(accumulator, collection[i], i, collection);
-    };
+    if (Array.isArray(collection)) {
+      for(var i = 0; i < collection.length; i++) {
+        accumulator = iterator(accumulator, collection[i], i, collection);
+      };
+    } else {
+      for (var key in collection) {
+        accumulator = iterator(accumulator, collection[key], key, collection);
+      }
+    }
+      
     return accumulator;
   };
 
@@ -193,16 +200,33 @@
     }, false);
   };
 
-
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    // every is to test if everything in the test pass the true test. so we start iteration with false. then we 
+    // go through everything, if all pass the true test, we are okay with it
+    if (iterator === undefined) {
+      for (var i = 0; i < collection.length; i++) {
+        if (Boolean(collection[i]) != true) {
+          return false
+        }
+      }
+      return true;
+    }
+
+    return _.reduce(collection, function(allFound, item) {
+      return !!iterator(item) && allFound;
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    // return _.every(collection, function(allFound, item) {
+    //   return !!iterator(item) && allFound;
+    // }, false);
+
   };
 
 
